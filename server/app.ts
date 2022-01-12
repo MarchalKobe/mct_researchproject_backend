@@ -5,15 +5,17 @@ import { GraphQLSchema } from 'graphql';
 import { buildSchema } from 'type-graphql';
 import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerLoaderPlugin } from 'type-graphql-dataloader';
+import admin from 'firebase-admin';
+import serviceAccount from './serviceAccountKey.json';
 import cors from 'cors';
 import http from 'http';
 
 import { UserResolver } from './modules/user/User.resolver';
 
 (async () => {
-    // admin.initializeApp({
-    //     credential: admin.credential.cert(serviceAccount as any),
-    // });
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount as any),
+    });
 
     const connectionOptions: ConnectionOptions = await getConnectionOptions();
 

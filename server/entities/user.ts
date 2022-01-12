@@ -24,7 +24,7 @@ export class User {
     password?: string;
 
     @Field(() => String)
-    @Column({ name: 'preferred-theme' })
+    @Column({ name: 'preferred-theme', default: 'dark' })
     preferredTheme?: string;
 
     @Field(() => Int)
@@ -33,4 +33,7 @@ export class User {
 
     @Column({ name: 'confirmed', type: 'boolean', default: false })
     confirmed?: boolean;
+
+    @Field(() => String, { nullable: true })
+    token?: string;
 };
