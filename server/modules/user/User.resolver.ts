@@ -21,7 +21,6 @@ export class UserResolver {
             const users = await this.repository.find();
             console.log(users);
             return users;
-            
         } catch(error: any) {
             console.error(error);
             return null;

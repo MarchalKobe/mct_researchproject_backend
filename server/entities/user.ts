@@ -1,5 +1,6 @@
 import { Field, ID, Int, ObjectType } from 'type-graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Classroom } from './classroom';
 
 @ObjectType()
 @Entity('user')
@@ -36,4 +37,8 @@ export class User {
 
     @Field(() => String, { nullable: true })
     token?: string;
+
+    @Field(() => [Classroom])
+    @OneToMany(() => Classroom, classroom => classroom, { lazy: true })
+    ordersProcessed?: Promise<Classroom[]>;
 };

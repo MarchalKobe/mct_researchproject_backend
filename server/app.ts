@@ -11,6 +11,8 @@ import cors from 'cors';
 import http from 'http';
 
 import { UserResolver } from './modules/user/User.resolver';
+import { Classroom } from './entities/classroom';
+import { ClassroomResolver } from './modules/classroom/Classroom.resolver';
 
 (async () => {
     admin.initializeApp({
@@ -27,7 +29,7 @@ import { UserResolver } from './modules/user/User.resolver';
                 port = process.env.PORT || 5001;
             
             const schema: GraphQLSchema = await buildSchema({
-                resolvers: [UserResolver],
+                resolvers: [UserResolver, ClassroomResolver],
                 // authChecker: customAuthChecker,
             });
 
