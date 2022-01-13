@@ -11,4 +11,6 @@ export class AddClassroomInput {
     classcode?: string;
 
     userCreated?: User;
+
+    users?: User[];
 };

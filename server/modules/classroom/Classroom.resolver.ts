@@ -14,8 +14,7 @@ export class ClassroomResolver {
     @Query(() => [Classroom], { nullable: true })
     async getClassrooms(): Promise<Classroom[] | null> {
         try {
-            const classrooms = await this.repository.find();
-            console.log(classrooms);
+            const classrooms = await this.repository.find({ relations: ['userCreated', 'users'] });
             return classrooms;
         } catch(error: any) {
             console.error(error);
@@ -30,18 +29,20 @@ export class ClassroomResolver {
             const user = await this.userRepository.findOne({ userId: userId });
 
             if(user) {
-                let classroom = null;
+                let classroom: Classroom = {
+                    name: data.name,
+                    userCreated: user,
+                    users: [user],
+                };
+
+                let checkClassroom = null;
 
                 do {
-                    data.classcode = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
-                    classroom = await this.repository.findOne({ classcode: data.classcode });
-                } while(classroom !== undefined && classroom !== null);
+                    classroom.classcode = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+                    checkClassroom = await this.repository.findOne({ classcode: classroom.classcode });
+                } while(checkClassroom !== undefined && checkClassroom !== null);
     
-                data.userCreated = user;
-
-                console.log(data);
-                
-                await this.repository.save(data);
+                await this.repository.save(classroom);
                 return true;
             };
 
