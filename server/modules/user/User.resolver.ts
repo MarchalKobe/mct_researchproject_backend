@@ -7,16 +7,21 @@ import { RegisterInput } from './register/RegisterInput';
 import { LoginInput } from './login/LoginInput';
 import { redis } from '../../redis';
 import { sendEmail } from '../utils/sendEmail';
-import { createConfirmationUrl } from '../utils/createUrl';
+import { createConfirmationUrl, createPasswordRestoreUrl } from '../utils/createUrl';
+import { RestorePasswordInput } from './password/RestorePasswordInput';
+import { ForgotPasswordInput } from './password/ForgotPasswordInput';
 
 @Resolver()
 export class UserResolver {
     repository = getRepository(User);
 
-    @Query(() => User, { nullable: true })
-    async getUsers() {
+    @Query(() => [User], { nullable: true })
+    async getUsers(): Promise<User[] | null> {
         try {
-            return await this.repository.find();
+            const users = await this.repository.find();
+            console.log(users);
+            return users;
+            
         } catch(error: any) {
             console.error(error);
             return null;
@@ -98,6 +103,47 @@ export class UserResolver {
                 user.confirmed = true;
                 await this.repository.save(user);
                 await redis.del(`confirmemail-${token}`);
+                return true;
+            };
+    
+            return false;
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
+    @Mutation(() => Boolean, { nullable: true })
+    async forgotPassword(@Arg('data') data: ForgotPasswordInput): Promise<Boolean | null> {
+        try {
+            const user = await this.repository.findOne({ email: data.email });
+    
+            if(user) {
+                await sendEmail(user.email!, await createPasswordRestoreUrl(user.userId!));
+                return true;
+            };
+    
+            return false;
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
+    @Mutation(() => Boolean, { nullable: true })
+    async restorePassword(@Arg('token') token: string, @Arg('data') data: RestorePasswordInput): Promise<Boolean | null> {
+        try {
+            const userId = await redis.get(`passwordrestore-${token}`);
+    
+            if(!userId) return false;
+    
+            const user = await this.repository.findOne({ userId: userId });
+    
+            if(user) {
+                const hashedPassword = await bcrypt.hash(data.password!, 12);
+                user.password = hashedPassword;
+                await this.repository.save(user);
+                await redis.del(`passwordrestore-${token}`);
                 return true;
             };
     
