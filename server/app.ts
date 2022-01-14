@@ -11,8 +11,8 @@ import cors from 'cors';
 import http from 'http';
 
 import { UserResolver } from './modules/user/User.resolver';
-import { Classroom } from './entities/classroom';
 import { ClassroomResolver } from './modules/classroom/Classroom.resolver';
+import { customAuthChecker } from './helpers/AuthorizeDecorator';
 
 (async () => {
     admin.initializeApp({
@@ -30,7 +30,7 @@ import { ClassroomResolver } from './modules/classroom/Classroom.resolver';
             
             const schema: GraphQLSchema = await buildSchema({
                 resolvers: [UserResolver, ClassroomResolver],
-                // authChecker: customAuthChecker,
+                authChecker: customAuthChecker,
             });
 
             const apolloServer = new ApolloServer({

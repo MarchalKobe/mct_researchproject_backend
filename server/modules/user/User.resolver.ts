@@ -1,4 +1,4 @@
-import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
 import { getRepository } from 'typeorm';
 import admin from 'firebase-admin';
 import bcrypt from 'bcrypt';
@@ -21,6 +21,8 @@ import { UpdateEditorInput } from './update/UpdateEditorInput';
 export class UserResolver {
     repository = getRepository(User);
 
+    // TODO: temp
+    @Authorized(['TEACHER'])
     @Query(() => [User], { nullable: true })
     async getUsers(): Promise<User[] | null> {
         try {
@@ -162,6 +164,7 @@ export class UserResolver {
         };
     };
 
+    @Authorized()
     @Mutation(() => Boolean, { nullable: true })
     async updateAccountGeneral(@Ctx() { req }: any, @Arg('data') data: UpdateGeneralInput): Promise<Boolean | null> {
         try {
@@ -183,6 +186,7 @@ export class UserResolver {
         };
     };
 
+    @Authorized()
     @Mutation(() => Boolean, { nullable: true })
     async updateAccountEmail(@Ctx() { req }: any, @Arg('data') data: UpdateEmailInput): Promise<Boolean | null> {
         try {
@@ -206,6 +210,7 @@ export class UserResolver {
         };
     };
 
+    @Authorized()
     @Mutation(() => Boolean, { nullable: true })
     async updateAccountPassword(@Ctx() { req }: any, @Arg('data') data: UpdatePasswordInput): Promise<Boolean | null> {
         try {
@@ -236,6 +241,7 @@ export class UserResolver {
         };
     };
 
+    @Authorized()
     @Mutation(() => Boolean, { nullable: true })
     async updateAccountEditor(@Ctx() { req }: any, @Arg('data') data: UpdateEditorInput): Promise<Boolean | null> {
         try {

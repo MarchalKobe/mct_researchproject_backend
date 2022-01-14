@@ -1,4 +1,4 @@
-import { Arg, createParamDecorator, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Authorized, createParamDecorator, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { getRepository } from "typeorm";
 import { Classroom } from "../../entities/classroom";
 import { User } from "../../entities/user";
@@ -12,6 +12,7 @@ export class ClassroomResolver {
     repository = getRepository(Classroom);
     userRepository = getRepository(User);
 
+    @Authorized()
     @Query(() => Classroom, { nullable: true })
     async getClassroom(@Arg('classroomId') classroomId: string): Promise<Classroom | undefined | null> {
         try {
@@ -26,6 +27,7 @@ export class ClassroomResolver {
         };
     };
 
+    @Authorized()
     @Query(() => [Classroom], { nullable: true })
     async getMyJoinedClassrooms(@Ctx() { req }: Context): Promise<Classroom[] | null> {
         try {
@@ -49,6 +51,7 @@ export class ClassroomResolver {
         };
     };
 
+    @Authorized(['TEACHER'])
     @Mutation(() => Boolean)
     async addClassroom(@Ctx() { req }: Context, @Arg('data') data: AddClassroomInput): Promise<Boolean> {
         try {
@@ -80,6 +83,7 @@ export class ClassroomResolver {
         };
     };
 
+    @Authorized()
     @Mutation(() => Boolean)
     async joinClassroom(@Ctx() { req }: Context, @Arg('data') data: JoinClassroomInput): Promise<Boolean> {
         try {
@@ -103,6 +107,7 @@ export class ClassroomResolver {
         };
     };
 
+    @Authorized()
     @Mutation(() => Boolean)
     async leaveClassroom(@Ctx() { req }: Context, @Arg('classroomId') classroomId: string): Promise<Boolean> {
         try {
