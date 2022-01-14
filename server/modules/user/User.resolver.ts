@@ -14,6 +14,7 @@ import { generateFromString } from 'generate-avatar';
 import { ContextToUserId } from '../utils/ContextAuthorization';
 import { UpdateGeneralInput } from './update/UpdateGeneralInput';
 import { UpdateEmailInput } from './update/UpdateEmailInput';
+import { UpdatePasswordInput } from './update/UpdatePasswordInput';
 
 @Resolver()
 export class UserResolver {
@@ -193,6 +194,36 @@ export class UserResolver {
                 user.confirmed = false;
                 await this.repository.save(user);
                 await sendEmail(user.email!, await createConfirmationUrl(user.userId!));
+                return true;
+            } else {
+                return false;
+            };
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
+    @Mutation(() => Boolean, { nullable: true })
+    async updateAccountPassword(@Ctx() { req }: any, @Arg('data') data: UpdatePasswordInput): Promise<Boolean | null> {
+        try {
+            const userId = ContextToUserId(req);
+    
+            const user = await this.repository.findOne({ userId: userId });
+    
+            if(user) {
+                if(data.current && data.password) {
+                    const result = await bcrypt.compare(data.current, user.password!);
+    
+                    if(result) {
+                        const hashedPassword = await bcrypt.hash(data.password, 12);
+                        user.password = hashedPassword;
+                    } else {
+                        return null;
+                    };
+                };
+                
+                this.repository.save(user);
                 return true;
             } else {
                 return false;
