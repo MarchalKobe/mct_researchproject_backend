@@ -1,4 +1,4 @@
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, createParamDecorator, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { getRepository } from "typeorm";
 import { Classroom } from "../../entities/classroom";
 import { User } from "../../entities/user";
@@ -13,10 +13,22 @@ export class ClassroomResolver {
     userRepository = getRepository(User);
 
     @Query(() => [Classroom], { nullable: true })
-    async getClassrooms(): Promise<Classroom[] | null> {
+    async getMyJoinedClassrooms(@Ctx() { req }: Context): Promise<Classroom[] | null> {
         try {
-            const classrooms = await this.repository.find({ relations: ['userCreated', 'users'] });
-            return classrooms;
+            const userId = ContextToUserId(req);
+            const user = await this.userRepository.findOne({ userId: userId });
+
+            if(user) {
+                const classrooms = await this.repository.createQueryBuilder('classroom')
+                    .leftJoinAndSelect('classroom.userCreated', 'userCreated')
+                    .leftJoinAndSelect('classroom.users', 'users')
+                    .where(`users.user-id = '${user.userId}'`)
+                    .getMany();
+
+                return classrooms;
+            };
+
+            return null;
         } catch(error: any) {
             console.error(error);
             return null;
@@ -65,6 +77,29 @@ export class ClassroomResolver {
 
                 if(classroom) {
                     classroom.users!.push(user);
+                    await this.repository.save(classroom);
+                    return true;
+                };
+            };
+
+            return false;
+        } catch(error: any) {
+            console.error(error);
+            return false;
+        };
+    };
+
+    @Mutation(() => Boolean)
+    async leaveClassroom(@Ctx() { req }: Context, @Arg('classroomId') classroomId: string): Promise<Boolean> {
+        try {
+            const userId = ContextToUserId(req);
+            const user = await this.userRepository.findOne({ userId: userId });
+
+            if(user) {
+                const classroom = await this.repository.findOne({ where: { classroomId: classroomId }, relations: ['users'] });
+    
+                if(classroom) {
+                    classroom.users = classroom.users!.filter((thisUser: User) => thisUser.userId !== user.userId);
                     await this.repository.save(classroom);
                     return true;
                 };
