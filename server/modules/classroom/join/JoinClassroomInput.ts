@@ -2,8 +2,8 @@ import { Field, InputType } from 'type-graphql';
 import { Length } from 'class-validator';
 
 @InputType()
-export class AddClassroomInput {
+export class JoinClassroomInput {
     @Field()
-    @Length(1, 255)
-    name: string;
+    @Length(4, 4)
+    classcode: string;
 };

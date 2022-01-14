@@ -5,6 +5,7 @@ import { User } from "../../entities/user";
 import Context from "../../types/Context";
 import { ContextToUserId } from "../utils/ContextAuthorization";
 import { AddClassroomInput } from "./add/AddClassroomInput";
+import { JoinClassroomInput } from "./join/JoinClassroomInput";
 
 @Resolver()
 export class ClassroomResolver {
@@ -44,6 +45,29 @@ export class ClassroomResolver {
     
                 await this.repository.save(classroom);
                 return true;
+            };
+
+            return false;
+        } catch(error: any) {
+            console.error(error);
+            return false;
+        };
+    };
+
+    @Mutation(() => Boolean)
+    async joinClassroom(@Ctx() { req }: Context, @Arg('data') data: JoinClassroomInput): Promise<Boolean> {
+        try {
+            const userId = ContextToUserId(req);
+            const user = await this.userRepository.findOne({ userId: userId });
+
+            if(user) {
+                const classroom = await this.repository.findOne({ where: { classcode: data.classcode }, relations: ['users'] });
+
+                if(classroom) {
+                    classroom.users!.push(user);
+                    await this.repository.save(classroom);
+                    return true;
+                };
             };
 
             return false;
