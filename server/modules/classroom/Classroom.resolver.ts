@@ -12,6 +12,20 @@ export class ClassroomResolver {
     repository = getRepository(Classroom);
     userRepository = getRepository(User);
 
+    @Query(() => Classroom, { nullable: true })
+    async getClassroom(@Arg('classroomId') classroomId: string): Promise<Classroom | undefined | null> {
+        try {
+            return await this.repository.createQueryBuilder('classroom')
+                .leftJoinAndSelect('classroom.userCreated', 'userCreated')
+                .leftJoinAndSelect('classroom.users', 'users')
+                .where(`classroom.classroom-id = '${classroomId}'`)
+                .getOne();
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
     @Query(() => [Classroom], { nullable: true })
     async getMyJoinedClassrooms(@Ctx() { req }: Context): Promise<Classroom[] | null> {
         try {
