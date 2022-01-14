@@ -1,4 +1,4 @@
-import { Arg, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql';
 import { getRepository } from 'typeorm';
 import admin from 'firebase-admin';
 import bcrypt from 'bcrypt';
@@ -11,6 +11,9 @@ import { createConfirmationUrl, createPasswordRestoreUrl } from '../utils/create
 import { RestorePasswordInput } from './password/RestorePasswordInput';
 import { ForgotPasswordInput } from './password/ForgotPasswordInput';
 import { generateFromString } from 'generate-avatar';
+import { ContextToUserId } from '../utils/ContextAuthorization';
+import { UpdateGeneralInput } from './update/UpdateGeneralInput';
+import { UpdateEmailInput } from './update/UpdateEmailInput';
 
 @Resolver()
 export class UserResolver {
@@ -150,6 +153,50 @@ export class UserResolver {
             };
     
             return false;
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
+    @Mutation(() => Boolean, { nullable: true })
+    async updateAccountGeneral(@Ctx() { req }: any, @Arg('data') data: UpdateGeneralInput): Promise<Boolean | null> {
+        try {
+            const userId = ContextToUserId(req);
+    
+            const user = await this.repository.findOne({ userId: userId });
+    
+            if(user) {
+                user.firstName = data.firstName;
+                user.lastName = data.lastName;
+                await this.repository.save(user);
+                return true;
+            } else {
+                return false;
+            };
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
+    @Mutation(() => Boolean, { nullable: true })
+    async updateAccountEmail(@Ctx() { req }: any, @Arg('data') data: UpdateEmailInput): Promise<Boolean | null> {
+        try {
+            const userId = ContextToUserId(req);
+    
+            const user = await this.repository.findOne({ userId: userId });
+    
+            if(user) {
+                user.email = data.email;
+                user.avatar = generateFromString(data.email);
+                user.confirmed = false;
+                await this.repository.save(user);
+                await sendEmail(user.email!, await createConfirmationUrl(user.userId!));
+                return true;
+            } else {
+                return false;
+            };
         } catch(error: any) {
             console.error(error);
             return null;
