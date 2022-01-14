@@ -35,6 +35,10 @@ export class User {
     @Column({ name: 'confirmed', type: 'boolean', default: false })
     confirmed?: boolean;
 
+    @Field(() => String)
+    @Column({ name: 'avatar', type: 'longtext' })
+    avatar?: string;
+
     @Field(() => String, { nullable: true })
     token?: string;
 

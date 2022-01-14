@@ -10,6 +10,7 @@ import { sendEmail } from '../utils/sendEmail';
 import { createConfirmationUrl, createPasswordRestoreUrl } from '../utils/createUrl';
 import { RestorePasswordInput } from './password/RestorePasswordInput';
 import { ForgotPasswordInput } from './password/ForgotPasswordInput';
+import { generateFromString } from 'generate-avatar';
 
 @Resolver()
 export class UserResolver {
@@ -38,6 +39,7 @@ export class UserResolver {
                 email: data.email,
                 password: hashedPassword,
                 type: data.type,
+                avatar: generateFromString(data.email),
             };
     
             await this.repository.save(newUser);
@@ -65,6 +67,7 @@ export class UserResolver {
                         lastName: user.lastName,
                         email: user.email,
                         type: user.type,
+                        avatar: user.avatar,
                     };
     
                     const customToken = await admin.auth().createCustomToken(user.userId as string, claims).then((token) => token);
