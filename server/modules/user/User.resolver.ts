@@ -15,6 +15,7 @@ import { ContextToUserId } from '../utils/ContextAuthorization';
 import { UpdateGeneralInput } from './update/UpdateGeneralInput';
 import { UpdateEmailInput } from './update/UpdateEmailInput';
 import { UpdatePasswordInput } from './update/UpdatePasswordInput';
+import { UpdateEditorInput } from './update/UpdateEditorInput';
 
 @Resolver()
 export class UserResolver {
@@ -72,6 +73,7 @@ export class UserResolver {
                         email: user.email,
                         type: user.type,
                         avatar: user.avatar,
+                        preferredTheme: user.preferredTheme,
                     };
     
                     const customToken = await admin.auth().createCustomToken(user.userId as string, claims).then((token) => token);
@@ -224,6 +226,26 @@ export class UserResolver {
                 };
                 
                 this.repository.save(user);
+                return true;
+            } else {
+                return false;
+            };
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
+    @Mutation(() => Boolean, { nullable: true })
+    async updateAccountEditor(@Ctx() { req }: any, @Arg('data') data: UpdateEditorInput): Promise<Boolean | null> {
+        try {
+            const userId = ContextToUserId(req);
+    
+            const user = await this.repository.findOne({ userId: userId });
+    
+            if(user) {
+                user.preferredTheme = data.preferredTheme;
+                await this.repository.save(user);
                 return true;
             } else {
                 return false;
