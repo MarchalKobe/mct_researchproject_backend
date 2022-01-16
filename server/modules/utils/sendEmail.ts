@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export const sendEmail = async (email: string, url: string) => {
+export const sendEmail = async (email: string, body: string) => {
     const testAccount = await nodemailer.createTestAccount();
 
     const transporter = nodemailer.createTransport({
@@ -17,8 +17,8 @@ export const sendEmail = async (email: string, url: string) => {
         from: '"Code Assignment" <noreply@codeassignment.com>',
         to: email,
         subject: 'Confirm email',
-        text: url,
-        html: `<a href="${url}">link</a>`,
+        text: body,
+        html: body,
     });
 
     console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
