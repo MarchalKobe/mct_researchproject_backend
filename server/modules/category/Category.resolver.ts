@@ -3,6 +3,7 @@ import { getRepository } from 'typeorm';
 import { Category } from '../../entities/category';
 import { Classroom } from '../../entities/classroom';
 import { AddCategoryInput } from './add/AddCategoryInput';
+import { UpdateCategoryInput } from './update/UpdateCategoryInput';
 
 @Resolver()
 export class CategoryResolver {
@@ -62,4 +63,41 @@ export class CategoryResolver {
             return false;
         };
     };
+
+    @Authorized(['TEACHER'])
+    @Mutation(() => Boolean)
+    async updateCategory(@Arg('data') data: UpdateCategoryInput): Promise<Boolean> {
+        try {
+            const category = await this.repository.findOne({ categoryId: data.categoryId });
+
+            if(category) {
+                category.name = data.name;
+                await this.repository.save(category);
+                return true;
+            };
+
+            return false;
+        } catch(error: any) {
+            console.error(error);
+            return false;
+        };
+    };
+
+    // @Authorized(['TEACHER'])
+    // @Mutation(() => Boolean)
+    // async deleteCategory(@Arg('categoryId') categoryId: string): Promise<Boolean> {
+    //     try {
+    //         const category = await this.repository.findOne({ categoryId: categoryId });
+
+    //         if(category) {
+    //             await this.repository.delete(category);
+    //             return true;
+    //         };
+
+    //         return false;
+    //     } catch(error: any) {
+    //         console.error(error);
+    //         return false;
+    //     };
+    // };
 };
