@@ -38,13 +38,11 @@ export class ClassroomResolver {
             const user = await this.userRepository.findOne({ userId: userId });
 
             if(user) {
-                const classrooms = await this.repository.createQueryBuilder('classroom')
+                return await this.repository.createQueryBuilder('classroom')
                     .leftJoinAndSelect('classroom.userCreated', 'userCreated')
                     .leftJoinAndSelect('classroom.users', 'users')
                     .where(`users.user-id = '${user.userId}'`)
                     .getMany();
-
-                return classrooms;
             };
 
             return null;
