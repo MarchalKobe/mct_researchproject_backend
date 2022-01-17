@@ -48,9 +48,16 @@ export class AssignmentResolver {
             const category = await this.categoryRepository.findOne({ categoryId: data.categoryId });
 
             if(category) {
+                const assignments = await this.repository.createQueryBuilder('assignment')
+                    .leftJoinAndSelect('assignment.category', 'category')
+                    .where(`category.category-id = '${category.categoryId}'`)
+                    .orderBy('assignment.position')
+                    .getMany();
+
                 let assignment: Assignment = {
                     subject: data.subject,
                     category: category,
+                    position: assignments.length ? assignments[assignments.length - 1].position! + 1 : 1,
                 };
 
                 await this.repository.save(assignment);

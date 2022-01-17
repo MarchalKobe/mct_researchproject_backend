@@ -13,6 +13,10 @@ export class Assignment {
     @Column({ name: 'subject' })
     subject?: string;
 
+    @Field(() => Number)
+    @Column({ name: 'position' })
+    position?: number;
+
     @Field(() => Category)
     @ManyToOne(() => Category)
     @JoinColumn({ name: 'category-id' })
