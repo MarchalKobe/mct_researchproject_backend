@@ -19,6 +19,8 @@ export class ClassroomResolver {
     @Query(() => Classroom, { nullable: true })
     async getClassroom(@Arg('classroomId') classroomId: string): Promise<Classroom | undefined | null> {
         try {
+            // TODO: Check if user is joined to class
+
             return await this.repository.createQueryBuilder('classroom')
                 .leftJoinAndSelect('classroom.userCreated', 'userCreated')
                 .leftJoinAndSelect('classroom.users', 'users')
@@ -136,6 +138,8 @@ export class ClassroomResolver {
     @Mutation(() => Boolean)
     async resetClasscode(@Arg('classroomId') classroomId: string): Promise<Boolean> {
         try {
+            // TODO: Check if teacher is joined to class
+
             const classroom = await this.repository.findOne({ where: { classroomId: classroomId } });
 
             if(classroom) {
@@ -160,6 +164,8 @@ export class ClassroomResolver {
     @Authorized(['TEACHER'])
     @Mutation(() => Boolean)
     async deleteUserFromClassroom(@Arg('data') data: DeleteUserFromClassroomInput): Promise<Boolean> {
+        // TODO: Check if teacher is joined to class
+
         try {
             const classroom = await this.repository.findOne({ where: { classroomId: data.classroomId }, relations: ['users'] });
 
@@ -180,6 +186,8 @@ export class ClassroomResolver {
     @Mutation(() => Boolean)
     async inviteUserToClassroom(@Arg('data') data: InviteUserToClassroomInput): Promise<Boolean> {
         try {
+            // TODO: Check if teacher is joined to class
+
             const user = await this.userRepository.findOne({ email: data.email });
 
             if(user) {

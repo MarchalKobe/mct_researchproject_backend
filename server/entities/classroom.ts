@@ -1,5 +1,6 @@
 import { Field, ID, ObjectType } from 'type-graphql';
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Category } from './category';
 import { User } from './user';
 
 @ObjectType()
@@ -23,7 +24,12 @@ export class Classroom {
     users?: User[];
 
     @Field(() => User)
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, user => user.classroomsCreated)
+    // @JoinColumn()
     @JoinColumn({ name: 'usercreated-id' })
     userCreated?: User;
+
+    @Field(() => [Category], { nullable: true })
+    @OneToMany(() => Category, category => category.classroom)
+    categories?: Category[];
 };

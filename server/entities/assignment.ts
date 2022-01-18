@@ -1,6 +1,7 @@
 import { Field, ID, ObjectType } from 'type-graphql';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Category } from './category';
+import { Level } from './level';
 
 @ObjectType()
 @Entity('assignment')
@@ -14,11 +15,20 @@ export class Assignment {
     subject?: string;
 
     @Field(() => Number)
-    @Column({ name: 'position' })
+    @Column({ name: 'position', type: 'int' })
     position?: number;
 
+    @Field(() => Boolean)
+    @Column({ name: 'visible', type: 'boolean', default: false })
+    visible?: boolean;
+
     @Field(() => Category)
-    @ManyToOne(() => Category)
+    @ManyToOne(() => Category, category => category.assignments)
+    // @JoinColumn()
     @JoinColumn({ name: 'category-id' })
     category?: Category;
+
+    @Field(() => [Level], { nullable: true })
+    @OneToMany(() => Level, level => level.assignment)
+    levels?: Level[];
 };

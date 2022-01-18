@@ -14,6 +14,8 @@ export class CategoryResolver {
     @Query(() => Category, { nullable: true })
     async getCategory(@Arg('categoryId') categoryId: string): Promise<Category | undefined | null> {
         try {
+            // TODO: Check if user is joined to class where category is in
+
             return await this.repository.findOne({ categoryId: categoryId });
         } catch(error: any) {
             console.error(error);
@@ -25,6 +27,8 @@ export class CategoryResolver {
     @Query(() => [Category], { nullable: true })
     async getCategoriesByClassroom(@Arg('classroomId') classroomId: string): Promise<Category[] | undefined | null> {
         try {
+            // TODO: Check if user is joined to class where category is in
+
             const classroom = await this.classroomRepository.findOne({ classroomId: classroomId });
 
             if(classroom) {
@@ -45,6 +49,8 @@ export class CategoryResolver {
     @Mutation(() => Boolean)
     async addCategory(@Arg('data') data: AddCategoryInput): Promise<Boolean> {
         try {
+            // TODO: Check if teacher is joined to class where category is in
+
             const classroom = await this.classroomRepository.findOne({ classroomId: data.classroomId });
 
             if(classroom) {
@@ -68,6 +74,8 @@ export class CategoryResolver {
     @Mutation(() => Boolean)
     async updateCategory(@Arg('data') data: UpdateCategoryInput): Promise<Boolean> {
         try {
+            // TODO: Check if teacher is joined to class where category is in
+
             const category = await this.repository.findOne({ categoryId: data.categoryId });
 
             if(category) {

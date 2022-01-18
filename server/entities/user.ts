@@ -45,8 +45,8 @@ export class User {
     @Field(() => [Classroom], { nullable: true })
     @ManyToMany(() => Classroom, classroom => classroom.users)
     classrooms?: Classroom[];
-
-    @Field(() => [Classroom])
-    @OneToMany(() => Classroom, classroom => classroom)
-    ordersProcessed?: Classroom[];
+    
+    @Field(() => [Classroom], { nullable: true })
+    @OneToMany(() => Classroom, classroom => classroom.userCreated)
+    classroomsCreated?: Classroom[];
 };

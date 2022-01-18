@@ -2,6 +2,7 @@ import { Arg, Authorized, Mutation, Query, Resolver } from 'type-graphql';
 import { getRepository } from 'typeorm';
 import { Assignment } from '../../entities/assignment';
 import { Category } from '../../entities/category';
+import { Level } from '../../entities/level';
 import { AddAssignmentInput } from './add/AddAssignmentInput';
 import { UpdateAssignmentInput } from './update/UpdateAssignmentInput';
 
@@ -9,21 +10,24 @@ import { UpdateAssignmentInput } from './update/UpdateAssignmentInput';
 export class AssignmentResolver {
     repository = getRepository(Assignment);
     categoryRepository = getRepository(Category);
+    levelRepository = getRepository(Level);
 
-    @Authorized()
-    @Query(() => Assignment, { nullable: true })
-    async getAssignment(@Arg('assignmentId') assignmentId: string): Promise<Assignment | undefined | null> {
-        try {
-            return await this.repository.findOne({ assignmentId: assignmentId });
-        } catch(error: any) {
-            console.error(error);
-            return null;
-        };
-    };
+    // @Authorized()
+    // @Query(() => Assignment, { nullable: true })
+    // async getAssignment(@Arg('assignmentId') assignmentId: string): Promise<Assignment | undefined | null> {
+    //     try {
+    //         return await this.repository.findOne({ assignmentId: assignmentId });
+    //     } catch(error: any) {
+    //         console.error(error);
+    //         return null;
+    //     };
+    // };
 
     @Authorized()
     @Query(() => [Assignment], { nullable: true })
     async getAssignmentsByCategory(@Arg('categoryId') categoryId: string): Promise<Assignment[] | undefined | null> {
+        // TODO: Check if user can see this assignment (if user is joined to class)
+
         try {
             const category = await this.categoryRepository.findOne({ categoryId: categoryId });
 
@@ -45,6 +49,8 @@ export class AssignmentResolver {
     @Mutation(() => Boolean)
     async addAssignment(@Arg('data') data: AddAssignmentInput): Promise<Boolean> {
         try {
+            // TODO: Check if teacher is joined to class where category is in
+
             const category = await this.categoryRepository.findOne({ categoryId: data.categoryId });
 
             if(category) {
@@ -53,11 +59,23 @@ export class AssignmentResolver {
                     .where(`category.category-id = '${category.categoryId}'`)
                     .orderBy('assignment.position')
                     .getMany();
+                
+                let levels: Level[] = [];
 
-                let assignment: Assignment = {
+                for(let i = 1; i <= 3; i++) {
+                    const level: Level = {
+                        level: i,
+                    };
+
+                    await this.levelRepository.save(level);
+                    levels.push(level);
+                };
+
+                const assignment: Assignment = {
                     subject: data.subject,
-                    category: category,
                     position: assignments.length ? assignments[assignments.length - 1].position! + 1 : 1,
+                    category: category,
+                    levels: levels,
                 };
 
                 await this.repository.save(assignment);
@@ -75,6 +93,10 @@ export class AssignmentResolver {
     @Mutation(() => Boolean)
     async updateAssignment(@Arg('data') data: UpdateAssignmentInput): Promise<Boolean> {
         try {
+            // TODO: Check if teacher is joined to class where category is in
+
+            // TODO: Update visibility
+
             const assignment = await this.repository.findOne({ assignmentId: data.assignmentId });
 
             if(assignment) {
