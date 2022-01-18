@@ -2,16 +2,16 @@ import { Field, InputType } from 'type-graphql';
 import { Length, IsUUID, IsInt } from 'class-validator';
 
 @InputType()
-export class UpdateAssignmentInput {
+export class UpdateLevelInput {
     @Field()
     @IsUUID()
-    assignmentId: string;
+    levelId: string;
 
     @Field()
-    @Length(1, 255)
-    subject: string;
+    @Length(1, 10000)
+    description: string;
 
-    @Field({ nullable: true })
+    @Field()
     @IsInt()
-    position?: number;
+    status: number;
 };

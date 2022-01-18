@@ -34,7 +34,9 @@ export class AssignmentResolver {
             if(category) {
                 return await this.repository.createQueryBuilder('assignment')
                     .leftJoinAndSelect('assignment.category', 'category')
+                    .leftJoinAndSelect('assignment.levels', 'levels')
                     .where(`category.category-id = '${category.categoryId}'`)
+                    .orderBy('levels.level')
                     .getMany();
             };
 
@@ -57,7 +59,7 @@ export class AssignmentResolver {
                 const assignments = await this.repository.createQueryBuilder('assignment')
                     .leftJoinAndSelect('assignment.category', 'category')
                     .where(`category.category-id = '${category.categoryId}'`)
-                    .orderBy('assignment.position')
+                    .orderBy('assignment.position', 'DESC')
                     .getMany();
                 
                 let levels: Level[] = [];
@@ -73,7 +75,7 @@ export class AssignmentResolver {
 
                 const assignment: Assignment = {
                     subject: data.subject,
-                    position: assignments.length ? assignments[assignments.length - 1].position! + 1 : 1,
+                    position: assignments.length ? assignments[0].position! + 1 : 1,
                     category: category,
                     levels: levels,
                 };
@@ -96,11 +98,14 @@ export class AssignmentResolver {
             // TODO: Check if teacher is joined to class where category is in
 
             // TODO: Update visibility
+            console.log(data);
+            
 
             const assignment = await this.repository.findOne({ assignmentId: data.assignmentId });
 
             if(assignment) {
                 assignment.subject = data.subject;
+                if(data.position) assignment.position = data.position;
                 await this.repository.save(assignment);
                 return true;
             };

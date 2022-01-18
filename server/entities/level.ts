@@ -13,13 +13,13 @@ export class Level {
     @Column({ name: 'level', type: 'int' })
     level?: number; // 1: easy; 2: normal; 3: hard
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Column({ name: 'description', type: 'longtext', nullable: true })
     description?: string;
 
-    @Field(() => Boolean)
-    @Column({ name: 'ready', type: 'boolean', default: false })
-    ready?: boolean;
+    @Field(() => Number)
+    @Column({ name: 'status', type: 'int', default: 0 })
+    status?: number; // 0: not started; 1: in progress; 2: ready
 
     @Field(() => Assignment)
     @ManyToOne(() => Assignment, assignment => assignment.levels)

@@ -15,6 +15,7 @@ import { ClassroomResolver } from './modules/classroom/Classroom.resolver';
 import { customAuthChecker } from './helpers/AuthorizeDecorator';
 import { CategoryResolver } from './modules/category/Category.resolver';
 import { AssignmentResolver } from './modules/assignment/Assignment.resolver';
+import { LevelResolver } from './modules/level/Level.resolver';
 
 (async () => {
     admin.initializeApp({
@@ -31,7 +32,7 @@ import { AssignmentResolver } from './modules/assignment/Assignment.resolver';
                 port = process.env.PORT || 5001;
             
             const schema: GraphQLSchema = await buildSchema({
-                resolvers: [UserResolver, ClassroomResolver, CategoryResolver, AssignmentResolver],
+                resolvers: [UserResolver, ClassroomResolver, CategoryResolver, AssignmentResolver, LevelResolver],
                 authChecker: customAuthChecker,
             });
 
