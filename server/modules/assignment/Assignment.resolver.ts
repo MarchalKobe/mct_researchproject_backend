@@ -64,9 +64,15 @@ export class AssignmentResolver {
                 
                 let levels: Level[] = [];
 
+                const defaultCode = {
+                    html: '',
+                };
+
                 for(let i = 1; i <= 3; i++) {
                     const level: Level = {
                         level: i,
+                        code: JSON.stringify(defaultCode),
+                        startcode: JSON.stringify(defaultCode),
                     };
 
                     await this.levelRepository.save(level);

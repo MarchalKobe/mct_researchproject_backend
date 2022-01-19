@@ -21,6 +21,14 @@ export class Level {
     @Column({ name: 'status', type: 'int', default: 0 })
     status?: number; // 0: not started; 1: in progress; 2: ready
 
+    @Field(() => String)
+    @Column({ name: 'code', type: 'longtext' })
+    code?: string;
+
+    @Field(() => String)
+    @Column({ name: 'startcode', type: 'longtext' })
+    startcode?: string;
+
     @Field(() => Assignment)
     @ManyToOne(() => Assignment, assignment => assignment.levels)
     // @JoinColumn()

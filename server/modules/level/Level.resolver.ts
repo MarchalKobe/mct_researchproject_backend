@@ -27,6 +27,8 @@ export class LevelResolver {
             if(level) {
                 level.description = data.description;
                 level.status = data.status;
+                level.code = data.code;
+                level.startcode = data.startcode;
                 await this.repository.save(level);
                 return true;
             };
