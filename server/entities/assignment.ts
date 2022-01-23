@@ -19,12 +19,11 @@ export class Assignment {
     position?: number;
 
     @Field(() => Boolean)
-    @Column({ name: 'visible', type: 'boolean', default: false })
-    visible?: boolean;
+    @Column({ name: 'ready', type: 'boolean', default: false })
+    ready?: boolean;
 
     @Field(() => Category)
     @ManyToOne(() => Category, category => category.assignments)
-    // @JoinColumn()
     @JoinColumn({ name: 'category-id' })
     category?: Category;
 

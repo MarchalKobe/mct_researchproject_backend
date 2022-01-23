@@ -80,6 +80,19 @@ export class CategoryResolver {
 
             if(category) {
                 category.name = data.name;
+                
+                if(data.visible !== null) {
+                    const categories = await this.repository.find();
+
+                    categories.map((cat: Category) => {
+                        cat.visible = false;
+                    });
+                    
+                    await this.repository.save(categories);
+                    
+                    category.visible = data.visible;
+                };
+
                 await this.repository.save(category);
                 return true;
             };

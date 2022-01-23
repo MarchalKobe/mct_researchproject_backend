@@ -14,9 +14,12 @@ export class Category {
     @Column({ name: 'name' })
     name?: string;
 
+    @Field(() => Boolean)
+    @Column({ name: 'visible', type: 'boolean', default: false })
+    visible?: boolean;
+
     @Field(() => Classroom)
     @ManyToOne(() => Classroom, classroom => classroom.categories)
-    // @JoinColumn()
     @JoinColumn({ name: 'classroom-id' })
     classroom?: Classroom;
 

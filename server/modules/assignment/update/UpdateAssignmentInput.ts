@@ -1,5 +1,5 @@
 import { Field, InputType } from 'type-graphql';
-import { Length, IsUUID, IsInt } from 'class-validator';
+import { Length, IsUUID, IsInt, IsBoolean } from 'class-validator';
 
 @InputType()
 export class UpdateAssignmentInput {
@@ -14,4 +14,8 @@ export class UpdateAssignmentInput {
     @Field({ nullable: true })
     @IsInt()
     position?: number;
+
+    @Field({ nullable: true })
+    @IsBoolean()
+    ready: boolean;
 };

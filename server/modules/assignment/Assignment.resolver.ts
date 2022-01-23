@@ -103,15 +103,12 @@ export class AssignmentResolver {
         try {
             // TODO: Check if teacher is joined to class where category is in
 
-            // TODO: Update visibility
-            console.log(data);
-            
-
             const assignment = await this.repository.findOne({ assignmentId: data.assignmentId });
 
             if(assignment) {
                 assignment.subject = data.subject;
                 if(data.position) assignment.position = data.position;
+                if(data.ready !== null) assignment.ready = data.ready;
                 await this.repository.save(assignment);
                 return true;
             };

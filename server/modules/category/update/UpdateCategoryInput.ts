@@ -1,5 +1,5 @@
 import { Field, InputType } from 'type-graphql';
-import { Length, IsUUID } from 'class-validator';
+import { Length, IsUUID, IsBoolean } from 'class-validator';
 
 @InputType()
 export class UpdateCategoryInput {
@@ -10,4 +10,8 @@ export class UpdateCategoryInput {
     @Field()
     @Length(1, 255)
     name: string;
+
+    @Field({ nullable: true })
+    @IsBoolean()
+    visible: boolean;
 };

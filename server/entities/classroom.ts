@@ -25,7 +25,6 @@ export class Classroom {
 
     @Field(() => User)
     @ManyToOne(() => User, user => user.classroomsCreated)
-    // @JoinColumn()
     @JoinColumn({ name: 'usercreated-id' })
     userCreated?: User;
 

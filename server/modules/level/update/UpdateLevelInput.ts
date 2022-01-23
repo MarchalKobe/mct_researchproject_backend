@@ -1,5 +1,5 @@
 import { Field, InputType } from 'type-graphql';
-import { Length, IsUUID, IsInt } from 'class-validator';
+import { Length, IsUUID, IsInt,  } from 'class-validator';
 
 @InputType()
 export class UpdateLevelInput {
@@ -8,7 +8,7 @@ export class UpdateLevelInput {
     levelId: string;
 
     @Field()
-    @Length(1, 10000)
+    @Length(0, 10000)
     description: string;
 
     @Field()
@@ -16,10 +16,10 @@ export class UpdateLevelInput {
     status: number;
 
     @Field()
-    @Length(1, 10000)
+    // @Length(1, 10000)
     code: string;
 
     @Field()
-    @Length(1, 10000)
+    // @Length(1, 10000)
     startcode: string;
 };
