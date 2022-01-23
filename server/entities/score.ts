@@ -10,7 +10,7 @@ export class Score {
     @PrimaryGeneratedColumn('uuid', { name: 'score-id' })
     scoreId?: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Column({ name: 'code', type: 'longtext', nullable: true })
     code?: string;
 

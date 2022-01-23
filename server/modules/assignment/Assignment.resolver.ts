@@ -95,116 +95,42 @@ export class AssignmentResolver {
     
                 if(category) {
                     const assignment1 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 0`, false, 'assignment.position');
-
-                    // const assignment1 = await this.repository.createQueryBuilder('assignment')
-                    //     .leftJoinAndSelect('assignment.category', 'category')
-                    //     .leftJoinAndSelect('assignment.levels', 'levels')
-                    //     .leftJoinAndSelect('levels.scores', 'scores')
-                    //     .leftJoinAndSelect('scores.user', 'user')
-                    //     .where(`category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 0`)
-                    //     .getOne();
                     
                     if(assignment1) {
-                        console.log('1');
-
                         return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND (user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignment1.position}`, true, 'assignment.position');
-                        
-                        // return await this.repository.createQueryBuilder('assignment')
-                        //     .leftJoinAndSelect('assignment.category', 'category')
-                        //     .leftJoinAndSelect('assignment.levels', 'levels')
-                        //     .leftJoinAndSelect('levels.scores', 'scores')
-                        //     .leftJoinAndSelect('scores.user', 'user')
-                        //     .where(`category.category-id = '${category.categoryId}' AND (user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignment1.position}`)
-                        //     .orderBy('assignment.position')
-                        //     .getMany();
                     } else {
                         const assignments2 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 1`, true, 'assignment.position', 'DESC');
 
-                        // const assignments2 = await this.repository.createQueryBuilder('assignment')
-                        //     .leftJoinAndSelect('assignment.category', 'category')
-                        //     .leftJoinAndSelect('assignment.levels', 'levels')
-                        //     .leftJoinAndSelect('levels.scores', 'scores')
-                        //     .leftJoinAndSelect('scores.user', 'user')
-                        //     .where(`category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 1`)
-                        //     .orderBy('assignment.position', 'DESC')
-                        //     .getMany();
-
                         if(assignments2.length) {
-                            console.log('2');
-
                             const assignment3 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND (assignment.position = ${assignments2[0].position! + 1})`, false, 'assignment.position');
-
-                            // const assignment3 = await this.repository.createQueryBuilder('assignment')
-                            //     .leftJoinAndSelect('assignment.category', 'category')
-                            //     .leftJoinAndSelect('assignment.levels', 'levels')
-                            //     .leftJoinAndSelect('levels.scores', 'scores')
-                            //     .leftJoinAndSelect('scores.user', 'user')
-                            //     .where(`category.category-id = '${category.categoryId}' AND (assignment.position = ${assignments2[0].position! + 1})`)
-                            //     .getOne();
-                            
-                            console.log(assignment3);
                             
                             if(assignment3) {
-                                console.log('3');
-
-                                console.log(assignments2);
-
                                 const score: Score = {
                                     user: user,
+                                    code: JSON.stringify({ html: '' }),
                                     level: assignment3.levels![1], // TODO
                                 };
 
                                 await this.scoreRepository.save(score);
 
                                 return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position > ${assignments2[0].position})`, true, 'assignment.position');
-
-                                // return await this.repository.createQueryBuilder('assignment')
-                                //     .leftJoinAndSelect('assignment.category', 'category')
-                                //     .leftJoinAndSelect('assignment.levels', 'levels')
-                                //     .leftJoinAndSelect('levels.scores', 'scores')
-                                //     .leftJoinAndSelect('scores.user', 'user')
-                                //     .where(`category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position > ${assignments2[0].position})`)
-                                //     .orderBy('assignment.position')
-                                //     .getMany();
                             };
                         } else {
-                            console.log('4');
-
                             const assignment4 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND assignment.position = 1`, false, 'assignment.position');
                             
-                            // const assignment4 = await this.repository.createQueryBuilder('assignment')
-                            //     .leftJoinAndSelect('assignment.category', 'category')
-                            //     .leftJoinAndSelect('assignment.levels', 'levels')
-                            //     .leftJoinAndSelect('levels.scores', 'scores')
-                            //     .leftJoinAndSelect('scores.user', 'user')
-                            //     .where(`category.category-id = '${category.categoryId}' AND assignment.position = 1`)
-                            //     .getOne();
-                            
                             if(assignment4) {
-                                console.log('5');
-
                                 const score: Score = {
                                     user: user,
+                                    code: JSON.stringify({ html: '' }),
                                     level: assignment4.levels![1], // TODO
                                 };
 
                                 await this.scoreRepository.save(score);
 
                                 return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND (user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= 1`, true, 'assignment.position');
-
-                                // return await this.repository.createQueryBuilder('assignment')
-                                //     .leftJoinAndSelect('assignment.category', 'category')
-                                //     .leftJoinAndSelect('assignment.levels', 'levels')
-                                //     .leftJoinAndSelect('levels.scores', 'scores')
-                                //     .leftJoinAndSelect('scores.user', 'user')
-                                //     .where(`category.category-id = '${category.categoryId}' AND (user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= 1`)
-                                //     .orderBy('assignment.position')
-                                //     .getMany();
                             };
                         };
                     };
-
-                    return null;
                 };
             };
 
