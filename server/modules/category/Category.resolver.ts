@@ -24,6 +24,28 @@ export class CategoryResolver {
     };
 
     @Authorized()
+    @Query(() => Category, { nullable: true })
+    async getCurrentCategoryByClassroom(@Arg('classroomId') classroomId: string): Promise<Category | undefined | null> {
+        try {
+            // TODO: Check if user is joined to class where category is in
+
+            const classroom = await this.classroomRepository.findOne({ classroomId: classroomId });
+
+            if(classroom) {
+                return await this.repository.createQueryBuilder('category')
+                    .leftJoinAndSelect('category.classroom', 'classroom')
+                    .where(`classroom.classroom-id = '${classroom.classroomId}' AND category.visible`)
+                    .getOne();
+            };
+
+            return null;
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
+    @Authorized()
     @Query(() => [Category], { nullable: true })
     async getCategoriesByClassroom(@Arg('classroomId') classroomId: string): Promise<Category[] | undefined | null> {
         try {

@@ -1,6 +1,7 @@
 import { Field, ID, ObjectType } from 'type-graphql';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Assignment } from './assignment';
+import { Score } from './score';
 
 @ObjectType()
 @Entity('level')
@@ -31,7 +32,10 @@ export class Level {
 
     @Field(() => Assignment)
     @ManyToOne(() => Assignment, assignment => assignment.levels)
-    // @JoinColumn()
     @JoinColumn({ name: 'assignment-id' })
     assignment?: Assignment;
+
+    @Field(() => [Score], { nullable: true })
+    @OneToMany(() => Score, score => score.level)
+    scores?: Score[];
 };

@@ -1,6 +1,7 @@
 import { Field, ID, Int, ObjectType } from 'type-graphql';
 import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Classroom } from './classroom';
+import { Score } from './score';
 
 @ObjectType()
 @Entity('user')
@@ -49,4 +50,8 @@ export class User {
     @Field(() => [Classroom], { nullable: true })
     @OneToMany(() => Classroom, classroom => classroom.userCreated)
     classroomsCreated?: Classroom[];
+
+    @Field(() => [Score], { nullable: true })
+    @OneToMany(() => Score, score => score.level)
+    scores?: Score[];
 };
