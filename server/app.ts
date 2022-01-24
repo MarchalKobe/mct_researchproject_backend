@@ -17,6 +17,7 @@ import { CategoryResolver } from './modules/category/Category.resolver';
 import { AssignmentResolver } from './modules/assignment/Assignment.resolver';
 import { LevelResolver } from './modules/level/Level.resolver';
 import { ScoreResolver } from './modules/score/Score.resolver';
+import { TestResolver } from './modules/test/Test.resolver';
 
 (async () => {
     admin.initializeApp({
@@ -33,7 +34,7 @@ import { ScoreResolver } from './modules/score/Score.resolver';
                 port = process.env.PORT || 5001;
             
             const schema: GraphQLSchema = await buildSchema({
-                resolvers: [UserResolver, ClassroomResolver, CategoryResolver, AssignmentResolver, LevelResolver, ScoreResolver],
+                resolvers: [UserResolver, ClassroomResolver, CategoryResolver, AssignmentResolver, LevelResolver, ScoreResolver, TestResolver],
                 authChecker: customAuthChecker,
             });
 

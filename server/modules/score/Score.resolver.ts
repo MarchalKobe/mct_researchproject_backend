@@ -82,13 +82,14 @@ export class ScoreResolver {
     @Mutation(() => Boolean)
     async updateScore(@Arg('data') data: UpdateScoreInput): Promise<Boolean> {
         try {
-            // TODO: Check if teacher is joined to class where category is in
-
             const score = await this.repository.findOne({ scoreId: data.scoreId });
 
             if(score) {
                 score.status = data.status;
                 score.code = data.code;
+
+                // TODO: score code
+
                 await this.repository.save(score);
                 return true;
             };
