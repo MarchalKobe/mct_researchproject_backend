@@ -1,4 +1,5 @@
 import { Query, Resolver } from 'type-graphql';
+import jsdom from 'jsdom';
 import levenshtein from 'fast-levenshtein';
 
 
@@ -10,7 +11,7 @@ const html1 = `
     </head>
     <body>
         <h1>This is the main heading of the page</h1>
-        <input type="text" id="test" name="test" />
+        <input type="text" id="test" name="test" required />
         <p>h1 defines the most important heading of the page.</p>
         <h2>This is the first sub-heading</h2>
         <p>h2 describes the first sub-heading of the page.</p>
@@ -30,7 +31,7 @@ const html2 = `
     </head>
     <body>
         <h1>This is the main heading of the page</h1>
-        <input type="text" name="test" id="test" />
+        <input type="text" name="test" id="test" required="required" />
         <p>h1 defines the most important heading of the page.</p>
         <h2>This is the first sub-heading</h2>
         <p>h2 describes the first sub-heading of the page.</p>
@@ -40,6 +41,7 @@ const html2 = `
     </body>
     </html>
 `;
+
 
 
 const isValidHTML = async (html: string) => {
@@ -73,7 +75,7 @@ export class TestResolver {
             // Check if no errors and valid html file
             const isValid = await isValidHTML(html1);
 
-            if(isValid) {       
+            if(isValid) {
                 const minify = require('html-minifier').minify;
 
                 const options = {
@@ -85,16 +87,38 @@ export class TestResolver {
 
                 const result = minify(html1, options);
 
-                const result2 = minify(html2, options);
+                // const result2 = minify(html2, options);
 
-                console.log('Assignment:', result);
-                console.log('Your code:', result2);
-                
-                const distance = levenshtein.get(result, result2);
+                // console.log('Assignment:', result);
+                // console.log('Your code:', result2);
 
-                console.log('Levenshtein distance:', distance);
+
+
+                const removeAttributes = /<\s*([a-z][a-z0-9]*)\s.*?>/gi;
+                const getText = /<\/?[^>]+(>|$)/g;
+                const getAttributes = /(\S+)\s*=\s*([']|["])\s*([\W\w]*?)\s*\2/g;
                 
-                console.log(`Score: ${makePercentage(distance)}%`);
+                // Remove attributes
+                let tags = result.replace(removeAttributes, '<$1>');
+                tags = tags.match(getText).join('');
+                console.log(tags);
+
+                // Get text
+                const text = result.replace(getText, ' ').replace(/ +(?= )/g, '');
+                console.log(text);
+
+                // Get attributes
+                const attributes = result.match(getAttributes).join(' ');
+                console.log(attributes);
+
+                
+
+                
+                // const distance = levenshtein.get(result, result2);
+
+                // console.log('Levenshtein distance:', distance);
+                
+                // console.log(`Score: ${makePercentage(distance)}%`);
 
                 return true;
             } else {
