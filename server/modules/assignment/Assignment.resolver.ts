@@ -5,6 +5,7 @@ import { Category } from '../../entities/category';
 import { Level } from '../../entities/level';
 import { Score } from '../../entities/score';
 import { User } from '../../entities/user';
+import CodeScores from '../../types/CodeScores';
 import { ContextToUserId } from '../utils/ContextAuthorization';
 import { AddAssignmentInput } from './add/AddAssignmentInput';
 import { UpdateAssignmentInput } from './update/UpdateAssignmentInput';
@@ -94,35 +95,94 @@ export class AssignmentResolver {
                 const category = await this.categoryRepository.findOne({ categoryId: categoryId });
     
                 if(category) {
-                    const assignment1 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 0`, false, 'assignment.position');
+                    const assignment1: Assignment = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 0`, false, 'assignment.position');
                     
+                    // If student een score heeft met status 0 in deze category
                     if(assignment1) {
+                        // Return alle assignments in deze category vanaf deze oefening
                         return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND (user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignment1.position}`, true, 'assignment.position');
                     } else {
-                        const assignments2 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 1`, true, 'assignment.position', 'DESC');
+                        const assignments2: Assignment[] = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 1`, true, 'assignment.position', 'DESC');
 
+                        // Als student een score heeft met status 1 in deze category
                         if(assignments2.length) {
-                            const assignment3 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND (assignment.position = ${assignments2[0].position! + 1})`, false, 'assignment.position');
+                            // Score maken van volgende oefening en alle oefeningen meegeven vanaf deze score, level kiezen op basis van score laatste algemene oefening
                             
-                            if(assignment3) {
-                                const score: Score = {
-                                    user: user,
-                                    code: JSON.stringify({ html: '' }),
-                                    level: assignment3.levels![1], // TODO
-                                };
-
-                                await this.scoreRepository.save(score);
-
-                                return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position > ${assignments2[0].position})`, true, 'assignment.position');
+                            const previousScores = await this.scoreRepository.createQueryBuilder('score')
+                                .leftJoinAndSelect('score.user', 'user')
+                                .leftJoinAndSelect('score.level', 'level')
+                                .leftJoinAndSelect('level.assignment', 'assignment')
+                                .where(`user.user-id = '${user.userId}' AND assignment.assignment-id = '${assignments2[0].assignmentId}'`)
+                                .orderBy('score.updated_at', 'DESC')
+                                .getMany();
+                            
+                            const score: Score = {
+                                user: user,
+                                code: JSON.stringify({ html: '' }),
                             };
+
+                            if(previousScores) {
+                                const scores: CodeScores = JSON.parse(previousScores[0].scores!);
+
+                                const thisLevels = await this.levelRepository.createQueryBuilder('level')
+                                    .leftJoinAndSelect('level.assignment', 'assignment')
+                                    .where(`assignment.assignment-id = '${assignments2[0].assignmentId}'`)
+                                    .orderBy('level.level')
+                                    .getMany();
+
+                                // Als student score lager heeft dan 50% -> level lager in zelfde oefening. Als geen level lager -> zelfde level
+                                if(scores.total! < 50) {
+                                    console.log('< 50');
+
+                                    if(previousScores[0].level!.level === 1) {
+                                        score.level = thisLevels[0];
+                                    } else if(previousScores[0].level!.level === 2) {
+                                        score.level = thisLevels[0];
+                                    } else if(previousScores[0].level!.level === 3) {
+                                        score.level = thisLevels[1];
+                                    };
+
+                                    // Als student score tussen 50% en 90% -> level hoger in zelfde oefening. Als geen level hoger -> zelfde level
+                                } else if(scores.total! >= 50 && scores.total! < 90) {
+                                    console.log('50 - 90');
+                                    
+                                    score.level = thisLevels[previousScores[0].level!.level! - 1];
+
+                                    // Als student score hoger dan 90% -> volgende oefening met level normal
+                                } else if(scores.total! >= 90) {
+                                    console.log('> 90');
+                                    
+                                    if(previousScores[0].level!.level === 1) {
+                                        score.level = thisLevels[1];
+                                    } else if(previousScores[0].level!.level === 2) {
+                                        score.level = thisLevels[2];
+                                    } else if(previousScores[0].level!.level === 3) {
+                                        const assignment3 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND assignment.position = ${assignments2[0].position! + 1}`, false, 'levels.level');
+
+                                        // If volgende oefening in deze category
+                                        if(assignment3) {
+                                            score.level = assignment3.levels![1];
+
+                                            await this.scoreRepository.save(score);
+                                            return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignment3.position})`, true, 'assignment.position');
+                                        } else {
+                                            return null;
+                                        };
+                                    };
+                                };
+                            };
+                            
+                            await this.scoreRepository.save(score);
+                            return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignments2[0].position})`, true, 'assignment.position');
                         } else {
-                            const assignment4 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND assignment.position = 1`, false, 'assignment.position');
+                            // Score maken van eerste oefening in category, level is normal
+                            const assignment4 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND assignment.position = 1`, false, 'levels.level');
                             
                             if(assignment4) {
                                 const score: Score = {
                                     user: user,
                                     code: JSON.stringify({ html: '' }),
-                                    level: assignment4.levels![1], // TODO
+                                    level: assignment4.levels![1],
                                 };
 
                                 await this.scoreRepository.save(score);

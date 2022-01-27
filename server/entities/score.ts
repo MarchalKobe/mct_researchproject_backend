@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from 'type-graphql';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Level } from './level';
 import { User } from './user';
 
@@ -21,6 +21,10 @@ export class Score {
     @Field(() => String, { nullable: true })
     @Column({ name: 'scores', nullable: true })
     scores?: string;
+    
+    @Field(() => Date)
+    @UpdateDateColumn()
+    updated_at?: Date;
 
     @Field(() => User)
     @ManyToOne(() => User, user => user.scores)

@@ -83,6 +83,8 @@ export class ScoreResolver {
     @Mutation(() => Boolean)
     async updateScore(@Arg('data') data: UpdateScoreInput): Promise<Boolean> {
         try {
+            console.log(data);
+            
             const score = await this.repository.findOne({ where: { scoreId: data.scoreId }, relations: ['level'] });
 
             if(score) {
