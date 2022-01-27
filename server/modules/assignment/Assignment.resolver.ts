@@ -118,7 +118,6 @@ export class AssignmentResolver {
                             
                             const score: Score = {
                                 user: user,
-                                code: JSON.stringify({ html: '' }),
                             };
 
                             if(previousScores) {
@@ -136,10 +135,13 @@ export class AssignmentResolver {
 
                                     if(previousScores[0].level!.level === 1) {
                                         score.level = thisLevels[0];
+                                        score.code = thisLevels[0].startcode;
                                     } else if(previousScores[0].level!.level === 2) {
                                         score.level = thisLevels[0];
+                                        score.code = thisLevels[0].startcode;
                                     } else if(previousScores[0].level!.level === 3) {
                                         score.level = thisLevels[1];
+                                        score.code = thisLevels[1].startcode;
                                     };
 
                                     // Als student score tussen 50% en 90% -> level hoger in zelfde oefening. Als geen level hoger -> zelfde level
@@ -147,6 +149,7 @@ export class AssignmentResolver {
                                     console.log('50 - 90');
                                     
                                     score.level = thisLevels[previousScores[0].level!.level! - 1];
+                                    score.code = thisLevels[previousScores[0].level!.level! - 1].startcode;
 
                                     // Als student score hoger dan 90% -> volgende oefening met level normal
                                 } else if(scores.total! >= 90) {
@@ -154,14 +157,17 @@ export class AssignmentResolver {
                                     
                                     if(previousScores[0].level!.level === 1) {
                                         score.level = thisLevels[1];
+                                        score.code = thisLevels[1].startcode;
                                     } else if(previousScores[0].level!.level === 2) {
                                         score.level = thisLevels[2];
+                                        score.code = thisLevels[2].startcode;
                                     } else if(previousScores[0].level!.level === 3) {
                                         const assignment3 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND assignment.position = ${assignments2[0].position! + 1}`, false, 'levels.level');
 
                                         // If volgende oefening in deze category
                                         if(assignment3) {
                                             score.level = assignment3.levels![1];
+                                            score.code = assignment3.levels![1].startcode;
 
                                             await this.scoreRepository.save(score);
                                             return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignment3.position})`, true, 'assignment.position');
@@ -181,7 +187,7 @@ export class AssignmentResolver {
                             if(assignment4) {
                                 const score: Score = {
                                     user: user,
-                                    code: JSON.stringify({ html: '' }),
+                                    code: assignment4.levels![1].startcode,
                                     level: assignment4.levels![1],
                                 };
 
@@ -213,6 +219,8 @@ export class AssignmentResolver {
                 return await this.repository.createQueryBuilder('assignment')
                     .leftJoinAndSelect('assignment.category', 'category')
                     .leftJoinAndSelect('assignment.levels', 'levels')
+                    .leftJoinAndSelect('levels.scores', 'scores')
+                    .leftJoinAndSelect('scores.user', 'user')
                     .where(`category.category-id = '${category.categoryId}'`)
                     .orderBy('levels.level')
                     .getMany();
