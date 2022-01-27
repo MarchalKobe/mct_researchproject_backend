@@ -14,4 +14,8 @@ export class UpdateCategoryInput {
     @Field({ nullable: true })
     @IsBoolean()
     visible: boolean;
+
+    @Field({ nullable: true })
+    @IsBoolean()
+    done: boolean;
 };

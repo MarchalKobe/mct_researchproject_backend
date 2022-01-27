@@ -286,7 +286,7 @@ export class AssignmentResolver {
             if(assignment) {
                 assignment.subject = data.subject;
                 if(data.position) assignment.position = data.position;
-                if(data.ready !== null) assignment.ready = data.ready;
+                // if(data.ready !== null) assignment.ready = data.ready;
                 await this.repository.save(assignment);
                 return true;
             };

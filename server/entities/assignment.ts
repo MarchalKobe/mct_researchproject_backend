@@ -18,10 +18,6 @@ export class Assignment {
     @Column({ name: 'position', type: 'int' })
     position?: number;
 
-    @Field(() => Boolean)
-    @Column({ name: 'ready', type: 'boolean', default: false })
-    ready?: boolean;
-
     @Field(() => Category)
     @ManyToOne(() => Category, category => category.assignments)
     @JoinColumn({ name: 'category-id' })

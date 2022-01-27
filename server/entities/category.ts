@@ -15,6 +15,10 @@ export class Category {
     name?: string;
 
     @Field(() => Boolean)
+    @Column({ name: 'done', type: 'boolean', default: false })
+    done?: boolean;
+
+    @Field(() => Boolean)
     @Column({ name: 'visible', type: 'boolean', default: false })
     visible?: boolean;
 

@@ -115,6 +115,8 @@ export class CategoryResolver {
                     category.visible = data.visible;
                 };
 
+                if(data.done !== null) category.done = data.done;
+
                 await this.repository.save(category);
                 return true;
             };

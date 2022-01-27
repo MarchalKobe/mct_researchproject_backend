@@ -1,7 +1,9 @@
 import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
 import { getRepository } from 'typeorm';
+import { Assignment } from '../../entities/assignment';
 import { Score } from '../../entities/score';
 import { User } from '../../entities/user';
+import CodeScores from '../../types/CodeScores';
 import { ContextToUserId } from '../utils/ContextAuthorization';
 import { calculateLevenshteinDistance, calculateScores, divideCategories, isValidHTML } from '../utils/ScoringHelpers';
 import { UpdateScoreInput } from './update/UpdateScoreInput';
@@ -10,6 +12,7 @@ import { UpdateScoreInput } from './update/UpdateScoreInput';
 export class ScoreResolver {
     repository = getRepository(Score);
     userRepository = getRepository(User);
+    assignmentRepository = getRepository(Assignment);
 
     // @Authorized()
     // @Query(() => [Score], { nullable: true })
@@ -55,20 +58,31 @@ export class ScoreResolver {
     // };
 
     @Authorized()
-    @Query(() => [Score], { nullable: true })
-    async getMyScoresByCategory(@Ctx() { req }: any, @Arg('categoryId') categoryId: string): Promise<Score[] | undefined | null> {
+    @Query(() => [Assignment], { nullable: true })
+    async getMyScoresByCategory(@Ctx() { req }: any, @Arg('categoryId') categoryId: string): Promise<Assignment[] | undefined | null> {
         try {
             const userId = ContextToUserId(req);
 
             const user = await this.userRepository.findOne({ userId: userId });
 
             if(user) {
-                return await this.repository.createQueryBuilder('score')
-                    .leftJoinAndSelect('score.user', 'user')
-                    .leftJoinAndSelect('score.level', 'level')
-                    .leftJoinAndSelect('level.assignment', 'assignment')
+                // return await this.repository.createQueryBuilder('score')
+                //     .leftJoinAndSelect('score.user', 'user')
+                //     .leftJoinAndSelect('score.level', 'level')
+                //     .leftJoinAndSelect('level.assignment', 'assignment')
+                //     .leftJoinAndSelect('assignment.category', 'category')
+                //     .where(`user.user-id = '${user.userId}' AND category.category-id = '${categoryId}' AND score.status = 1`)
+                //     .getMany();
+                
+                return await this.assignmentRepository.createQueryBuilder('assignment')
                     .leftJoinAndSelect('assignment.category', 'category')
-                    .where(`user.user-id = '${user.userId}' AND category.category-id = '${categoryId}' AND score.status = 1`)
+                    .leftJoinAndSelect('assignment.levels', 'levels')
+                    .leftJoinAndSelect('levels.scores', 'scores')
+                    .leftJoinAndSelect('scores.user', 'user')
+                    .where(`user.user-id = '${user.userId}' AND category.category-id = '${categoryId}' AND scores.status = 1`)
+                    .orderBy('assignment.position', 'DESC')
+                    .addOrderBy('levels.level', 'DESC')
+                    .addOrderBy('scores.updated_at', 'DESC')
                     .getMany();
             };
 
@@ -83,16 +97,9 @@ export class ScoreResolver {
     @Mutation(() => Boolean)
     async updateScore(@Arg('data') data: UpdateScoreInput): Promise<Boolean> {
         try {
-            console.log(data);
-            
             const score = await this.repository.findOne({ where: { scoreId: data.scoreId }, relations: ['level'] });
 
             if(score) {
-                // TODO: score code
-
-                console.log(score.code!);
-                
-
                 const isValid = await isValidHTML(JSON.parse(data.code).html);
 
                 if(isValid) {
@@ -131,7 +138,11 @@ export class ScoreResolver {
                     await this.repository.save(score);
                     return true;
                 } else {
-                    // Give 0 score
+                    score.status = data.status;
+                    score.code = data.code;
+                    score.scores = JSON.stringify({ tags: 0, attributes: 0, text: 0, total: 0 } as CodeScores);
+
+                    await this.repository.save(score);
                     return true;
                 };
             };
