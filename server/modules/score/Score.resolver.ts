@@ -3,6 +3,7 @@ import { getRepository } from 'typeorm';
 import { Score } from '../../entities/score';
 import { User } from '../../entities/user';
 import { ContextToUserId } from '../utils/ContextAuthorization';
+import { calculateLevenshteinDistance, calculateScores, divideCategories, isValidHTML } from '../utils/ScoringHelpers';
 import { UpdateScoreInput } from './update/UpdateScoreInput';
 
 @Resolver()
@@ -82,16 +83,55 @@ export class ScoreResolver {
     @Mutation(() => Boolean)
     async updateScore(@Arg('data') data: UpdateScoreInput): Promise<Boolean> {
         try {
-            const score = await this.repository.findOne({ scoreId: data.scoreId });
+            const score = await this.repository.findOne({ where: { scoreId: data.scoreId }, relations: ['level'] });
 
             if(score) {
-                score.status = data.status;
-                score.code = data.code;
-
                 // TODO: score code
 
-                await this.repository.save(score);
-                return true;
+                console.log(score.code!);
+                
+
+                const isValid = await isValidHTML(JSON.parse(data.code).html);
+
+                if(isValid) {
+                    const minify = require('html-minifier').minify;
+
+                    const options = {
+                        collapseBooleanAttributes: true,
+                        collapseWhitespace: true,
+                        removeComments: true,
+                        sortAttributes: true,
+                    };
+
+                    const assignmentMinify = minify(JSON.parse(score.level!.code!).html, options);
+                    const studentMinify = minify(JSON.parse(data.code).html, options);
+
+                    const resultAssignment = divideCategories(assignmentMinify);
+                    const resultStudent = divideCategories(studentMinify);
+
+                    resultAssignment.code = JSON.parse(score.level!.code!).html;
+                    resultStudent.code = JSON.parse(data.code).html;
+
+                    const distances = calculateLevenshteinDistance(resultAssignment, resultStudent);
+
+                    const scores = calculateScores(distances);
+
+                    console.log('Student:', resultStudent);
+                    console.log('Assignment:', resultAssignment);
+                    console.log('Levenshtein distance:', distances);
+                    console.log('Scores:', scores);
+                    console.log('Total:', scores.total);
+
+                    score.status = data.status;
+                    score.code = data.code;
+                    score.scores = JSON.stringify(scores);
+
+                    await this.repository.save(score);
+                    return true;
+                } else {
+                    // Give 0 score
+                    return true;
+                };
             };
 
             return false;

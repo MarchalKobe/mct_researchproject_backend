@@ -18,6 +18,10 @@ export class Score {
     @Column({ name: 'status', type: 'int', default: 0 })
     status?: number; // 0: not started; 1: finished
 
+    @Field(() => String, { nullable: true })
+    @Column({ name: 'scores', nullable: true })
+    scores?: string;
+
     @Field(() => User)
     @ManyToOne(() => User, user => user.scores)
     @JoinColumn({ name: 'user-id' })
