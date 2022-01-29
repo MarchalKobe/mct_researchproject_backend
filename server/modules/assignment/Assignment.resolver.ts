@@ -101,6 +101,14 @@ export class AssignmentResolver {
                     if(assignment1) {
                         // Return alle assignments in deze category vanaf deze oefening
                         return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND (user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignment1.position}`, true, 'assignment.position');
+                        // return await this.repository.createQueryBuilder('assignment')
+                        //     .leftJoinAndSelect('assignment.category', 'category')
+                        //     .leftJoinAndSelect('assignment.levels', 'levels')
+                        //     .leftJoinAndSelect('levels.scores', 'scores')
+                        //     .leftJoinAndSelect('scores.user', 'user', `scores.user-id = user.user-id AND user.user-id = '${user.userId}'`)
+                        //     .where(`category.category-id = '${category.categoryId}' AND assignment.position >= ${assignment1.position}`)
+                        //     .orderBy('assignment.position')
+                        //     .getMany();
                     } else {
                         const assignments2: Assignment[] = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 1`, true, 'assignment.position', 'DESC');
 

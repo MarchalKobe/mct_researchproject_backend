@@ -21,14 +21,11 @@ import { UpdateEditorInput } from './update/UpdateEditorInput';
 export class UserResolver {
     repository = getRepository(User);
 
-    // TODO: temp
     @Authorized(['TEACHER'])
-    @Query(() => [User], { nullable: true })
-    async getUsers(): Promise<User[] | null> {
+    @Query(() => User, { nullable: true })
+    async getUser(@Arg('userId') userId: string): Promise<User | undefined | null> {
         try {
-            const users = await this.repository.find();
-            console.log(users);
-            return users;
+            return await this.repository.findOne({ userId: userId });
         } catch(error: any) {
             console.error(error);
             return null;

@@ -94,6 +94,32 @@ export class ScoreResolver {
     };
 
     @Authorized()
+    @Query(() => [Assignment], { nullable: true })
+    async getUserScoresByCategory(@Arg('userId') userId: string, @Arg('categoryId') categoryId: string): Promise<Assignment[] | undefined | null> {
+        try {
+            const user = await this.userRepository.findOne({ userId: userId });
+
+            if(user) {
+                return await this.assignmentRepository.createQueryBuilder('assignment')
+                    .leftJoinAndSelect('assignment.category', 'category')
+                    .leftJoinAndSelect('assignment.levels', 'levels')
+                    .leftJoinAndSelect('levels.scores', 'scores')
+                    .leftJoinAndSelect('scores.user', 'user')
+                    .where(`user.user-id = '${user.userId}' AND category.category-id = '${categoryId}' AND scores.status = 1`)
+                    .orderBy('assignment.position', 'DESC')
+                    .addOrderBy('levels.level', 'DESC')
+                    .addOrderBy('scores.updated_at', 'DESC')
+                    .getMany();
+            };
+
+            return null;
+        } catch(error: any) {
+            console.error(error);
+            return null;
+        };
+    };
+
+    @Authorized()
     @Mutation(() => Boolean)
     async updateScore(@Arg('data') data: UpdateScoreInput): Promise<Boolean> {
         try {
