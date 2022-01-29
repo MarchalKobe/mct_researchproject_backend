@@ -16,10 +16,8 @@ export class UpdateLevelInput {
     status: number;
 
     @Field()
-    // @Length(1, 10000)
     code: string;
 
     @Field()
-    // @Length(1, 10000)
     startcode: string;
 };

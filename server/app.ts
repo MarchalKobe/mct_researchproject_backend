@@ -12,12 +12,12 @@ import http from 'http';
 
 import { UserResolver } from './modules/user/User.resolver';
 import { ClassroomResolver } from './modules/classroom/Classroom.resolver';
-import { customAuthChecker } from './helpers/AuthorizeDecorator';
 import { CategoryResolver } from './modules/category/Category.resolver';
 import { AssignmentResolver } from './modules/assignment/Assignment.resolver';
 import { LevelResolver } from './modules/level/Level.resolver';
 import { ScoreResolver } from './modules/score/Score.resolver';
-import { TestResolver } from './modules/test/Test.resolver';
+
+import { customAuthChecker } from './helpers/AuthorizeDecorator';
 
 (async () => {
     admin.initializeApp({
@@ -34,7 +34,7 @@ import { TestResolver } from './modules/test/Test.resolver';
                 port = process.env.PORT || 5001;
             
             const schema: GraphQLSchema = await buildSchema({
-                resolvers: [UserResolver, ClassroomResolver, CategoryResolver, AssignmentResolver, LevelResolver, ScoreResolver, TestResolver],
+                resolvers: [UserResolver, ClassroomResolver, CategoryResolver, AssignmentResolver, LevelResolver, ScoreResolver],
                 authChecker: customAuthChecker,
             });
 
@@ -46,7 +46,6 @@ import { TestResolver } from './modules/test/Test.resolver';
                         typeormGetConnection: getConnection, // For use with TypeORM
                     }),
                 ],
-                // introspection: process.env.NODE_ENV === 'production' ? false : true,
             });
 
             app.use(express.json());

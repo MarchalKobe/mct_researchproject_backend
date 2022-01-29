@@ -40,18 +40,7 @@ export class AssignmentResolver {
     userRepository = getRepository(User);
     scoreRepository = getRepository(Score);
 
-    // @Authorized()
-    // @Query(() => Assignment, { nullable: true })
-    // async getAssignment(@Arg('assignmentId') assignmentId: string): Promise<Assignment | undefined | null> {
-    //     try {
-    //         return await this.repository.findOne({ assignmentId: assignmentId });
-    //     } catch(error: any) {
-    //         console.error(error);
-    //         return null;
-    //     };
-    // };
-
-    // @Authorized()
+    @Authorized()
     @Query(() => [Assignment], { nullable: true })
     async getMyAssignmentsByCategory(@Ctx() { req }: any, @Arg('categoryId') categoryId: string): Promise<Assignment[] | undefined | null> {
         // TODO: Check if user can see this assignment (if user is joined to class)
@@ -87,7 +76,6 @@ export class AssignmentResolver {
 
         try {
             const userId = ContextToUserId(req);
-            // const userId = 'edf456f1-76d4-422a-8ce6-91bd1ac73ff3';
     
             const user = await this.userRepository.findOne({ userId: userId });
 

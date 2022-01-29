@@ -14,17 +14,6 @@ export class ScoreResolver {
     userRepository = getRepository(User);
     assignmentRepository = getRepository(Assignment);
 
-    // @Authorized()
-    // @Query(() => [Score], { nullable: true })
-    // async getScores(): Promise<Score[] | undefined | null> {
-    //     try {
-    //         return await this.repository.find();
-    //     } catch(error: any) {
-    //         console.error(error);
-    //         return null;
-    //     };
-    // };
-
     @Authorized()
     @Query(() => Score, { nullable: true })
     async getScore(@Arg('scoreId') scoreId: string): Promise<Score | undefined | null> {
@@ -41,22 +30,6 @@ export class ScoreResolver {
         };
     };
 
-    // @Authorized()
-    // @Query(() => [Score], { nullable: true })
-    // async getScoresByCategory(@Arg('categoryId') categoryId: string): Promise<Score[] | undefined | null> {
-    //     try {
-    //         return await this.repository.createQueryBuilder('score')
-    //             .leftJoinAndSelect('score.level', 'level')
-    //             .leftJoinAndSelect('level.assignment', 'assignment')
-    //             .leftJoinAndSelect('assignment.category', 'category')
-    //             .where(`category.category-id = '${categoryId}' AND score.status = 1`)
-    //             .getMany();
-    //     } catch(error: any) {
-    //         console.error(error);
-    //         return null;
-    //     };
-    // };
-
     @Authorized()
     @Query(() => [Assignment], { nullable: true })
     async getMyScoresByCategory(@Ctx() { req }: any, @Arg('categoryId') categoryId: string): Promise<Assignment[] | undefined | null> {
@@ -66,14 +39,6 @@ export class ScoreResolver {
             const user = await this.userRepository.findOne({ userId: userId });
 
             if(user) {
-                // return await this.repository.createQueryBuilder('score')
-                //     .leftJoinAndSelect('score.user', 'user')
-                //     .leftJoinAndSelect('score.level', 'level')
-                //     .leftJoinAndSelect('level.assignment', 'assignment')
-                //     .leftJoinAndSelect('assignment.category', 'category')
-                //     .where(`user.user-id = '${user.userId}' AND category.category-id = '${categoryId}' AND score.status = 1`)
-                //     .getMany();
-                
                 return await this.assignmentRepository.createQueryBuilder('assignment')
                     .leftJoinAndSelect('assignment.category', 'category')
                     .leftJoinAndSelect('assignment.levels', 'levels')

@@ -1,4 +1,4 @@
-import { AuthChecker } from "type-graphql";
+import { AuthChecker } from 'type-graphql';
 import admin from 'firebase-admin';
 
 export const customAuthChecker: AuthChecker = async ({ context }, roles = []) => {

@@ -31,7 +31,7 @@ export class User {
 
     @Field(() => Int)
     @Column({ name: 'type', type: 'int' })
-    type?: number; // 0 = student; 1 = teacher
+    type?: number; // 0: student; 1: teacher
 
     @Column({ name: 'confirmed', type: 'boolean', default: false })
     confirmed?: boolean;

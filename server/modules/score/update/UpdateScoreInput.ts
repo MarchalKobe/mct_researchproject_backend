@@ -12,6 +12,5 @@ export class UpdateScoreInput {
     status: number;
 
     @Field()
-    // @Length(1, 10000)
     code: string;
 };
