@@ -128,21 +128,21 @@ export class CategoryResolver {
         };
     };
 
-    // @Authorized(['TEACHER'])
-    // @Mutation(() => Boolean)
-    // async deleteCategory(@Arg('categoryId') categoryId: string): Promise<Boolean> {
-    //     try {
-    //         const category = await this.repository.findOne({ categoryId: categoryId });
+    @Authorized(['TEACHER'])
+    @Mutation(() => Boolean)
+    async deleteCategory(@Arg('categoryId') categoryId: string): Promise<Boolean> {
+        try {
+            const category = await this.repository.findOne({ categoryId: categoryId });
 
-    //         if(category) {
-    //             await this.repository.delete(category);
-    //             return true;
-    //         };
+            if(category && !category.done) {
+                await this.repository.delete(category);
+                return true;
+            };
 
-    //         return false;
-    //     } catch(error: any) {
-    //         console.error(error);
-    //         return false;
-    //     };
-    // };
+            return false;
+        } catch(error: any) {
+            console.error(error);
+            return false;
+        };
+    };
 };

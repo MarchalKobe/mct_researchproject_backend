@@ -1,5 +1,5 @@
 import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
-import { getRepository } from 'typeorm';
+import { getRepository, MoreThan } from 'typeorm';
 import { Assignment } from '../../entities/assignment';
 import { Category } from '../../entities/category';
 import { Level } from '../../entities/level';
@@ -304,6 +304,41 @@ export class AssignmentResolver {
                 if(data.position) assignment.position = data.position;
                 // if(data.ready !== null) assignment.ready = data.ready;
                 await this.repository.save(assignment);
+                return true;
+            };
+
+            return false;
+        } catch(error: any) {
+            console.error(error);
+            return false;
+        };
+    };
+
+    @Authorized(['TEACHER'])
+    @Mutation(() => Boolean)
+    async deleteAssignment(@Arg('assignmentId') assignmentId: string): Promise<Boolean> {
+        try {
+            const assignment = await this.repository.findOne({ where: { assignmentId: assignmentId }, relations: ['category', 'levels'] });
+
+            console.log(assignment);
+            
+            if(assignment && assignment.category && !assignment.category.done && assignment.levels) {
+                assignment.levels.map(async (level: Level) => {
+                    const thisLevel = await this.levelRepository.findOne({ levelId: level.levelId });
+                    if(thisLevel) await this.levelRepository.delete(thisLevel);
+                });
+
+                const assignments = await this.repository.find({ category: { categoryId: assignment.category.categoryId }, position: MoreThan(assignment.position) });
+
+                if(assignments) {
+                    assignments.map(async (as: Assignment) => {
+                        as.position! -= 1;
+                        await this.repository.save(as);
+                    });
+                };
+
+                const thisAssignment = await this.repository.findOne({ assignmentId: assignment.assignmentId });
+                await this.repository.delete(thisAssignment!);
                 return true;
             };
 
