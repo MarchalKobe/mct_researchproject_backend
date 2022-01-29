@@ -1,6 +1,18 @@
 version: '3.1'
 
 services:
+  api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 5001:5001
+    env_file:
+      - docker.ormconfig.env
+    depends_on:
+      - mariadb
+      - redis
+
   mariadb:
     image: mariadb:10.6.4
     restart: always

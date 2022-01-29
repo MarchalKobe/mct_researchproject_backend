@@ -1,7 +1,7 @@
 import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
 import { getRepository } from 'typeorm';
 import admin from 'firebase-admin';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { User } from '../../entities/user';
 import { RegisterInput } from './register/RegisterInput';
 import { LoginInput } from './login/LoginInput';
