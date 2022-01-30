@@ -18,6 +18,10 @@ export class Classroom {
     @Column({ name: 'classcode' })
     classcode?: string;
 
+    @Field(() => Boolean)
+    @Column({ name: 'open', type: 'boolean', default: true })
+    open?: boolean;
+
     @Field(() => [User], { nullable: true })
     @ManyToMany(() => User, user => user.classrooms)
     @JoinTable()

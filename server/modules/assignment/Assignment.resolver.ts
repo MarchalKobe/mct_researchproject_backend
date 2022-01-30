@@ -45,44 +45,15 @@ export class AssignmentResolver {
     async getMyAssignmentsByCategory(@Ctx() { req }: any, @Arg('categoryId') categoryId: string): Promise<Assignment[] | undefined | null> {
         // TODO: Check if user can see this assignment (if user is joined to class)
 
-        /*
-        
-        Find alle assignments die in deze category zitten waar nog geen scores en geen scores met status 1 van zijn
-            -> Allemaal want category kan maar visible worden als alle assignments visible zijn
-        
-        Als er geen assignment is met score status 0 wordt er een nieuwe score aangemaakt met status 0
-
-        Dit is de assignment die de leerling moet starten
-
-        Het level (easy, normal, hard) wordt bepaald door vorige scores
-            -> Als er geen vorige scores zijn, wordt het level normal
-
-        */
-
-        /*
-
-        If student score status 0 in category
-            Alle assignments in die category meegeven vanaf die oefening
-
-        Else
-            Als student score status 1 in category
-                Als volgende oefening(en) in category
-                    Score maken van volgende oefening en alle oefeningen meegeven vanaf deze score, level kiezen op basis van score laatste algemene oefening
-            
-            Else
-                Score maken van eerste oefening in category, level kiezen op basis van score laatste algemene oefening
-
-        */
-
         try {
             const userId = ContextToUserId(req);
     
             const user = await this.userRepository.findOne({ userId: userId });
 
             if(user) {
-                const category = await this.categoryRepository.findOne({ categoryId: categoryId });
+                const category = await this.categoryRepository.findOne({ where: { categoryId: categoryId }, relations: ['classroom']  });
     
-                if(category) {
+                if(category && category.classroom!.open) {
                     const assignment1: Assignment = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND user.user-id = '${user.userId}' AND scores.status = 0`, false, 'assignment.position');
                     
                     // If student een score heeft met status 0 in deze category
@@ -103,7 +74,6 @@ export class AssignmentResolver {
                         // Als student een score heeft met status 1 in deze category
                         if(assignments2.length) {
                             // Score maken van volgende oefening en alle oefeningen meegeven vanaf deze score, level kiezen op basis van score laatste algemene oefening
-                            
                             const previousScores = await this.scoreRepository.createQueryBuilder('score')
                                 .leftJoinAndSelect('score.user', 'user')
                                 .leftJoinAndSelect('score.level', 'level')
@@ -127,8 +97,6 @@ export class AssignmentResolver {
 
                                 // Als student score lager heeft dan 50% -> level lager in zelfde oefening. Als geen level lager -> zelfde level
                                 if(scores.total! < 50) {
-                                    console.log('< 50');
-
                                     if(previousScores[0].level!.level === 1) {
                                         score.level = thisLevels[0];
                                         score.code = thisLevels[0].startcode;
@@ -140,17 +108,13 @@ export class AssignmentResolver {
                                         score.code = thisLevels[1].startcode;
                                     };
 
-                                    // Als student score tussen 50% en 90% -> level hoger in zelfde oefening. Als geen level hoger -> zelfde level
+                                // Als student score tussen 50% en 90% -> level hoger in zelfde oefening. Als geen level hoger -> zelfde level
                                 } else if(scores.total! >= 50 && scores.total! < 90) {
-                                    console.log('50 - 90');
-                                    
                                     score.level = thisLevels[previousScores[0].level!.level! - 1];
                                     score.code = thisLevels[previousScores[0].level!.level! - 1].startcode;
 
-                                    // Als student score hoger dan 90% -> volgende oefening met level normal
+                                // Als student score hoger dan 90% -> volgende oefening met level normal
                                 } else if(scores.total! >= 90) {
-                                    console.log('> 90');
-                                    
                                     if(previousScores[0].level!.level === 1) {
                                         score.level = thisLevels[1];
                                         score.code = thisLevels[1].startcode;
@@ -290,7 +254,6 @@ export class AssignmentResolver {
             if(assignment) {
                 assignment.subject = data.subject;
                 if(data.position) assignment.position = data.position;
-                // if(data.ready !== null) assignment.ready = data.ready;
                 await this.repository.save(assignment);
                 return true;
             };
@@ -307,8 +270,6 @@ export class AssignmentResolver {
     async deleteAssignment(@Arg('assignmentId') assignmentId: string): Promise<Boolean> {
         try {
             const assignment = await this.repository.findOne({ where: { assignmentId: assignmentId }, relations: ['category', 'levels'] });
-
-            console.log(assignment);
             
             if(assignment && assignment.category && !assignment.category.done && assignment.levels) {
                 assignment.levels.map(async (level: Level) => {

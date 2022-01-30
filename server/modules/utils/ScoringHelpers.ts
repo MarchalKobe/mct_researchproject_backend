@@ -60,7 +60,7 @@ export const calculateScores = (distance: CodeDistances) => {
     const scores: CodeScores = {
         tags: Math.round(calculateNormalDistribution(2.6, distance.tags)),
         attributes: Math.round(calculateNormalDistribution(5.4, distance.attributes)),
-        text: Math.round(calculateNormalDistribution(14, distance.text)),
+        text: Math.round(calculateNormalDistribution(16, distance.text)),
     };
 
     scores.total = Math.round((scores.tags + scores.attributes + scores.text) / 3);
