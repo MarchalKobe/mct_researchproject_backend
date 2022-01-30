@@ -58,7 +58,7 @@ const calculateNormalDistribution = (sigma: number, x: number) => {
 
 export const calculateScores = (distance: CodeDistances) => {
     const scores: CodeScores = {
-        tags: Math.round(calculateNormalDistribution(2.6, distance.tags)),
+        tags: Math.round(calculateNormalDistribution(1.9, distance.tags)),
         attributes: Math.round(calculateNormalDistribution(5.4, distance.attributes)),
         text: Math.round(calculateNormalDistribution(16, distance.text)),
     };

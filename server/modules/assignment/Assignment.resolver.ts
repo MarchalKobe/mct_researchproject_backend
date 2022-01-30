@@ -59,13 +59,13 @@ export class AssignmentResolver {
                     // If student een score heeft met status 0 in deze category
                     if(assignment1) {
                         // Return alle assignments in deze category vanaf deze oefening
-                        return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND (user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignment1.position}`, true, 'assignment.position');
+                        return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' AND scores.status = 0) OR (scores.status = 1)) AND assignment.position >= ${assignment1.position}`, true, 'assignment.position');
                         // return await this.repository.createQueryBuilder('assignment')
                         //     .leftJoinAndSelect('assignment.category', 'category')
                         //     .leftJoinAndSelect('assignment.levels', 'levels')
                         //     .leftJoinAndSelect('levels.scores', 'scores')
-                        //     .leftJoinAndSelect('scores.user', 'user', `scores.user-id = user.user-id AND user.user-id = '${user.userId}'`)
-                        //     .where(`category.category-id = '${category.categoryId}' AND assignment.position >= ${assignment1.position}`)
+                        //     .leftJoinAndSelect('scores.user', 'user')
+                        //     .where(`category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' AND scores.status = 0) OR (scores.status = 1)) AND assignment.position >= ${assignment1.position}`)
                         //     .orderBy('assignment.position')
                         //     .getMany();
                     } else {
@@ -130,7 +130,7 @@ export class AssignmentResolver {
                                             score.code = assignment3.levels![1].startcode;
 
                                             await this.scoreRepository.save(score);
-                                            return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignment3.position})`, true, 'assignment.position');
+                                            return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' AND scores.status = 0) OR (scores.status = 1)) AND assignment.position >= ${assignment3.position}`, true, 'assignment.position');
                                         } else {
                                             return null;
                                         };
@@ -139,7 +139,7 @@ export class AssignmentResolver {
                             };
                             
                             await this.scoreRepository.save(score);
-                            return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= ${assignments2[0].position})`, true, 'assignment.position');
+                            return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' AND scores.status = 0) OR (scores.status = 1)) AND assignment.position >= ${assignments2[0].position}`, true, 'assignment.position');
                         } else {
                             // Score maken van eerste oefening in category, level is normal
                             const assignment4 = await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND assignment.position = 1`, false, 'levels.level');
@@ -152,8 +152,7 @@ export class AssignmentResolver {
                                 };
 
                                 await this.scoreRepository.save(score);
-
-                                return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND (user.user-id = '${user.userId}' OR scores.user IS NULL) AND assignment.position >= 1`, true, 'assignment.position');
+                                return await assignmentsQuery(this.repository, `category.category-id = '${category.categoryId}' AND ((user.user-id = '${user.userId}' AND scores.status = 0) OR (scores.status = 1)) AND assignment.position >= 1`, true, 'assignment.position');
                             };
                         };
                     };

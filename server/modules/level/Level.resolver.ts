@@ -1,6 +1,7 @@
 import { Arg, Authorized, Mutation, Query, Resolver } from 'type-graphql';
 import { getRepository } from 'typeorm';
 import { Level } from '../../entities/level';
+import { isValidHTML } from '../utils/ScoringHelpers';
 import { UpdateLevelInput } from './update/UpdateLevelInput';
 
 @Resolver()
@@ -25,6 +26,9 @@ export class LevelResolver {
             const level = await this.repository.findOne({ levelId: data.levelId });
 
             if(level) {
+                const valid = await isValidHTML(JSON.parse(data.code).html);
+                if(!valid) return false;
+
                 level.description = data.description;
                 level.status = data.status;
                 level.code = data.code;

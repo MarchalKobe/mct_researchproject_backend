@@ -33,6 +33,8 @@ export class ClassroomResolver {
                 .leftJoinAndSelect('classroom.userCreated', 'userCreated')
                 .leftJoinAndSelect('classroom.users', 'users')
                 .where(`classroom.classroom-id = '${classroomId}'`)
+                .orderBy('users.last-name')
+                .addOrderBy('users.first-name')
                 .getOne();
         } catch(error: any) {
             console.error(error);
